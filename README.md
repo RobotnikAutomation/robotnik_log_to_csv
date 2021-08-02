@@ -7,49 +7,27 @@ The robotnik_log_to_csv package, based on RComponent structure. Node to save the
 (Optional)
 
 
-## 1 node_name
+## 1 log_to_csv_node
 
-does...
+Node to save the log topic into a .csv file.
 
 ### 1.1 Parameters
 
-* ~parameter_name (type, default: value)
-   description
+* ~log_topic (String, default: robotnik_hmi/log)
+   Name of the log topic subscriber.
    
 ### 1.2 Subscribed Topics
 
-* foo/topic_name1 (std_msgs/String)
-  topic_desciption 1
+* robotnik_hmi/log (std_msgs/String)
+  Log topic subscriber
 
 ### 1.3 Published Topics
 
-* foo/topic_name (std_msgs/String)
-  topic description, including any important rate information
+* log_to_csv/data (std_msgs/String)
+  Information about the node execution
 
-### 1.4 Services
-* foo/service_name (nav_msgs/GetMap)
-  service description
+### 1.4 Bringup
 
-### 1.5 Services Called
-* foo/service_name (nav_msgs/GetMap)
-  service description
-
-### 1.6 Action server
-* foo/service_name (move_base_msgs/MoveBaseAction)
-  Action service description
-
-### 1.7 Action clients called
-* foo/service_name (move_base_msgs/MoveBaseAction)
-  Action service description
-
-### 1.8 Required tf Transforms
-* foo → bar
-  description of transform
-
-### 1.9 Provided tf Transforms
-* baz → mumble
-  description of transform
-
-### 1.10 Bringup
-
-(optional)
+```console
+roslaunch robotnik_log_to_csv log_to_csv.launch
+```
