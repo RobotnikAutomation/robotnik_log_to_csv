@@ -92,6 +92,6 @@ class LogToCsv(RComponent):
         return RComponent.switch_to_state(self, new_state)
 
     def log_sub_cb(self, msg):
-        rospy.logwarn("Received msg: " + msg.data)
+        #rospy.logwarn("Received msg: " + msg.data)
         # TODO Save on a .csv file into a parametrized folder (using "n" days limit)
         self.tick_topics_health('log_sub')
