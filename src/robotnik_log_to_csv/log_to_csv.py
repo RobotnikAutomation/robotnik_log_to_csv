@@ -5,6 +5,8 @@ from rcomponent.rcomponent import *
 
 # Insert here general imports:
 import csv
+import os
+import re
 
 # Insert here msg and srv imports:
 from std_msgs.msg import String
@@ -28,6 +30,10 @@ class LogToCsv(RComponent):
 
         self.log_topic_name = rospy.get_param(
             '~log_topic', 'robotnik_hmi/log')
+        self.csv_folder_path = rospy.get_param(
+            '~csv_folder_path', '/home/robot/logs')
+        self.max_file_number = rospy.get_param(
+            '~max_file_number', 10)
 
     def ros_setup(self):
         """Creates and inits ROS components"""
@@ -49,6 +55,7 @@ class LogToCsv(RComponent):
 
     def init_state(self):
         self.data = String()
+        self.fieldnames = ["Time", "Type", "Log information"]
 
         return RComponent.init_state(self)
 
@@ -91,7 +98,50 @@ class LogToCsv(RComponent):
 
         return RComponent.switch_to_state(self, new_state)
 
+    def create_file(self, file):
+        csv_file = open(file, 'w')
+        writer = csv.DictWriter(csv_file, fieldnames=self.fieldnames)
+        writer.writeheader()
+
+    def write_file(self, file, msg_time, msg_type, msg_data):
+        csv_file = open(file, 'a')
+        writer = csv.DictWriter(csv_file, fieldnames=self.fieldnames)
+        my_dic = {
+            self.fieldnames[0]: msg_time,
+            self.fieldnames[1]: msg_type,
+            self.fieldnames[2]: msg_data
+        }
+        writer.writerow(my_dic)
+        csv_file.close()
+
+    def atoi(self, text):
+        return int(text) if text.isdigit() else text
+
+    def natural_keys(self, text):
+        date = re.split(r'(\d+)', text)
+        date[1], date[5] = date[5], date[1]
+        return [ self.atoi(c) for c in date]
+
     def log_sub_cb(self, msg):
-        #rospy.logwarn("Received msg: " + msg.data)
-        # TODO Save on a .csv file into a parametrized folder (using "n" days limit)
+        # Get msg information
+        try:
+            msg_type, msg_date, msg_time, msg_data = msg.data.split(" ", 3)
+        except ValueError:
+            rospy.logerr("LogToCsv::log_sub_cb: Error on log format.")
+            return
+        msg_date = msg_date.replace("/","-")
+        file = self.csv_folder_path + "/" + msg_date + ".csv"
+
+        # Create the file if it doesn't already exist
+        if not os.path.isfile(file):
+            self.create_file(file)
+            # Delete older files if max number of files reached
+            onlyfiles = [f for f in os.listdir(self.csv_folder_path)]
+            onlyfiles = sorted(onlyfiles, key=self.natural_keys, reverse=True)
+            while (len(onlyfiles) > self.max_file_number):
+                os.remove(self.csv_folder_path + "/" + onlyfiles.pop())
+
+        # Save the log msg into the file
+        self.write_file(file, msg_time, msg_type, msg_data)
+
         self.tick_topics_health('log_sub')

@@ -5,11 +5,15 @@
 	<arg name="desired_freq" default="1.0" />
 	<!-- Parameters -->
 	<arg name="log_topic" default="robotnik_hmi/log" />
+	<arg name="csv_folder_path" default="/home/robot/logs" />
+	<arg name="max_file_number" default="10" />
 
 	<!-- start LogToCsv node -->
 	<node name="log_to_csv" pkg="robotnik_log_to_csv" type="log_to_csv_node.py" output="screen" respawn="false">
 		<param name="desired_freq" value="$(arg desired_freq)"/>
 		<param name="log_topic" value="$(arg log_topic)"/>
+		<param name="csv_folder_path" value="$(arg csv_folder_path)"/>
+		<param name="max_file_number" value="$(arg max_file_number)"/>
 	</node>
 
 </launch>
